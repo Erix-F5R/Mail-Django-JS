@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#compose').addEventListener('click', compose_email);
 
   //Send Email
-  document.querySelector('#compose-form').addEventListener('submit', post_email ) 
+  document.querySelector('#compose-form').onsubmit = post_email; 
   
 
 
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function post_email(event){
 
-    event.preventDefault();
+    //event.preventDefault();
     
     let recps = document.querySelector('#compose-recipients').value;
     let sub = document.querySelector('#compose-subject').value;
@@ -37,8 +37,10 @@ function post_email(event){
         console.log(result);
     });
     
+    load_mailbox('inbox');
 
-  
+    return false;
+    
 
   
 }
@@ -58,10 +60,45 @@ function compose_email() {
 
 function load_mailbox(mailbox) {
   
+  console.log(mailbox);
+
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+  .then(emails => {
+  // Print emails
+  console.log(emails);
+
+  for( let i = 0; i < emails.length; i++){
+    let email = emails[i];
+    
+    let sender = email.sender;
+    let subject = email.subject;
+    let body = email.body;
+    let timestamp = email.timestamp;
+    
+    let style = ``
+    if (email.read){
+      style = ` "background-color: lightgrey;" `
+    }
+
+    
+    
+
+    document.querySelector('#emails-view').innerHTML += `<div id='email-box' style = ${style} >From:${sender} <br> Subject:${subject} <br> ${timestamp} <br> ${body}</div>`;
+
+
+    
+  }
+  document.querySelectorAll('#email-box').forEach(function(currentDiv) {currentDiv.style.border += 'solid black 2px'; })
+
+  // ... do something else with emails ...
+  });
+
 }
