@@ -29,18 +29,9 @@ function load_email(email_id){
   .then(response => response.json())
   .then(email => {
     document.querySelector('#email-view').innerHTML += `From:${email.sender} <br> Subject:${email.subject} <br> ${email.timestamp} <br> ${email.body}<br>`
-    
-    
-    let button = document.createElement('button');
-    button.innerHTML = 'Archive';
-    button.onclick = function() { 
-      fetch(`/emails/${email.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({archived: true})
-      })
-      
-    };
-    document.querySelector('#email-view').append(button);   
+    console.log(email.archived)
+    archive(email_id, email.archived);
+
 
   });
 
@@ -55,11 +46,37 @@ function load_email(email_id){
     })
   })
 
+};
+
+function archive(email_id, archived){
+    //Archive
+    let button = document.createElement('button');
+
+    if(!archived){
     
 
-
-  
-
+    button.innerHTML = 'Archive';
+    button.onclick = function() { 
+      fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({archived: true})
+      })
+      load_mailbox('inbox') 
+    }
+  }
+    else{
+    button.innerHTML = 'Unarchive';
+    button.onclick = function() { 
+      fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({archived: false})
+      })
+      load_mailbox('inbox') 
+    }
+    
+    };
+    document.querySelector('#email-view').append(button);
+      
 };
 
 function post_email(event) {
