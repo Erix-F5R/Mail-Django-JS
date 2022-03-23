@@ -31,6 +31,7 @@ function load_email(email_id){
     document.querySelector('#email-view').innerHTML += `From:${email.sender} <br> Subject:${email.subject} <br> ${email.timestamp} <br> ${email.body}<br>`
     console.log(email.archived)
     archive(email_id, email.archived);
+    reply(email_id);
 
 
   });
@@ -45,6 +46,32 @@ function load_email(email_id){
         read: true
     })
   })
+
+};
+
+function reply(email_id){
+  let button = document.createElement('button')
+  button.innerHTML = 'Reply'
+  button.onclick = function() {
+    
+      // Show compose view and hide other views
+      document.querySelector('#emails-view').style.display = 'none';
+      document.querySelector('#email-view').style.display = 'none';
+      document.querySelector('#compose-view').style.display = 'block';
+
+      fetch(`/emails/${email_id}`)
+      .then(response => response.json())
+      .then(email => {
+        // Clear out composition fields
+        document.querySelector('#compose-recipients').value = email.sender;
+        document.querySelector('#compose-subject').value = `Re: ${email.subject}`;
+        document.querySelector('#compose-body').value = `\n\nOn ${email.timestamp} ${email.sender} wrote:\n${email.body}`;
+    });
+  }
+
+
+  document.querySelector('#email-view').append(button);
+
 
 };
 
