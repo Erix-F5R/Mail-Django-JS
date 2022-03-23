@@ -15,11 +15,50 @@ document.addEventListener('DOMContentLoaded', function () {
   load_mailbox('inbox');
 });
 
-function load_email(){
+function load_email(email_id){
   
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#email-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  
+  //Clear emails
+  document.querySelector('#email-view').innerHTML = '' 
+
+  //GET Email
+  fetch(`/emails/${email_id}`)
+  .then(response => response.json())
+  .then(email => {
+    document.querySelector('#email-view').innerHTML += `From:${email.sender} <br> Subject:${email.subject} <br> ${email.timestamp} <br> ${email.body}<br>`
+    
+    
+    let button = document.createElement('button');
+    button.innerHTML = 'Archive';
+    button.onclick = function() { 
+      fetch(`/emails/${email.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({archived: true})
+      })
+      
+    };
+    document.querySelector('#email-view').append(button);   
+
+  });
+
+
+    
+
+  //PUT read = TRUE
+  fetch(`/emails/${email_id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: true
+    })
+  })
+
+    
+
+
+  
 
 };
 
@@ -80,42 +119,22 @@ function load_mailbox(mailbox) {
   fetch(`/emails/${mailbox}`)
     .then(response => response.json())
     .then(emails => {
-      // Print emails
-      console.log(emails);
 
       for (let i = 0; i < emails.length; i++) {
         let email = emails[i];
-
-        
-        let sender = email.sender;
-        let subject = email.subject;
-        let body = email.body;
-        let timestamp = email.timestamp;
-        let email_id = email.id;
-
         let newElement = document.createElement('div')
-        newElement.innerHTML = `From:${sender} <br> Subject:${subject} <br> ${timestamp} <br> ${body}`
+ 
+        newElement.innerHTML = `From:${email.sender} <br> Subject:${email.subject} <br> ${email.timestamp} <br> ${email.body}`
 
-        
-
-        //let style = ``
         if (email.read) {
           newElement.style.backgroundColor = 'lightgrey'
         }
-        
         newElement.id = 'email-box'
-        newElement.dataset.id = email_id
-
-        newElement.addEventListener('click', function(){ alert(newElement.dataset.id)})
-        
+        newElement.addEventListener('click', () => load_email(email.id))
         document.querySelector('#emails-view').append(newElement)
-
-
       }
-
       document.querySelectorAll('#email-box').forEach(function (currentDiv) { currentDiv.style.border += 'solid black 2px'; })
 
-      // ... do something else with emails ...
     });
 
 }
